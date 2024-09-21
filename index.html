@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Professional Chat Application</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+        }
+
+        .app-container {
+            display: flex;
+            height: 100vh;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar {
+            width: 250px;
+            background-color: #007bff; /* Changed color */
+            color: white;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .profile {
+            text-align: center;
+            margin-bottom: 20px;
+            cursor: pointer;
+        }
+
+        .profile-pic {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: 3px solid #fff;
+        }
+
+        .chat-window {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: #fff;
+            padding: 20px;
+            border-left: 1px solid #ddd;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            background-color: #e9ecef; /* Light background */
+        }
+
+        .input-area {
+            display: flex;
+        }
+
+        #message-input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        #send-button {
+            padding: 10px;
+            border: none;
+            background-color: #007bff; /* Changed color */
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .chat-item {
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+
+        .chat-item:hover {
+            background-color: #0056b3; /* Hover effect */
+        }
+
+        .icon-button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #007bff;
+            font-size: 1.2em;
+            margin: 0 5px;
+        }
+
+        /* Video Popup */
+        .video-popup {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .video-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+            padding: 10px;
+            background-color: #343a40;
+            border-radius: 5px 5px 0 0;
+        }
+
+        /* Profile Popup */
+        .profile-popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+            width: 300px;
+            padding: 20px;
+            z-index: 1000;
+        }
+
+        .profile-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .profile-header h3 {
+            margin: 0;
+        }
+
+        #close-profile {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="sidebar">
+            <div class="profile" id="profile-toggle">
+                <img src="profile-pic.jpg" alt="Profile Picture" class="profile-pic">
+                <h3>Username</h3>
+            </div>
+            <h2>Chats</h2>
+            <ul class="chat-list">
+                <li class="chat-item" onclick="openChat('Chat 1 ID')">Chat 1</li>
+                <li class="chat-item" onclick="openChat('Chat 2 ID')">Chat 2</li>
+                <li class="chat-item" onclick="openChat('Chat 3 ID')">Chat 3</li>
+            </ul>
+        </div>
+        <div class="chat-window" id="chat-window" style="display:none;">
+            <div class="header">
+                <h2 id="chat-title">Chat Title</h2>
+                <button onclick="closeChat()">Back</button>
+            </div>
+            <div class="messages" id="chat-messages">
+                <!-- Messages will be dynamically added here -->
+            </div>
+            <div class="input-area">
+                <input type="text" id="message-input" placeholder="Type a message..." />
+                <button id="send-button">Send</button>
+            </div>
+        </div>
+        <div class="video-popup" id="video-popup">
+            <div class="video-header">
+                <h2>YouTube Video</h2>
+                <button id="close-video">X</button>
+            </div>
+            <iframe id="video-player" width="100%" height="300px" src="" frameborder="0" allowfullscreen></iframe>
+        </div>
+    </div>
+
+    <!-- Profile Popup -->
+    <div class="profile-popup" id="profile-popup">
+        <div class="profile-header">
+            <h3>Profile Info</h3>
+            <button id="close-profile">X</button>
+        </div>
+        <div class="profile-details">
+            <p><strong>Name:</strong> Username</p>
+            <p><strong>Email:</strong> user@example.com</p>
+            <p><strong>Invite Link:</strong> <a href="#">Share Link</a></p>
+        </div>
+    </div>
+
+    <script>
+        function openChat(chatId) {
+            document.getElementById("chat-window").style.display = "flex";
+            document.getElementById("chat-title").textContent = chatId; // Show chat ID
+            document.getElementById("chat-messages").innerHTML = ""; // Clear previous messages
+        }
+
+        function closeChat() {
+            document.getElementById("chat-window").style.display = "none";
+        }
+
+        document.getElementById("send-button").onclick = function() {
+            const messageInput = document.getElementById("message-input");
+            const message = messageInput.value;
+            const chatMessages = document.getElementById("chat-messages");
+            
+            if (message) {
+                const newMessage = document.createElement("div");
+                newMessage.textContent = message;
+                chatMessages.appendChild(newMessage);
+                messageInput.value = "";
+                chatMessages.scrollTop = chatMessages.scrollHeight; // Auto scroll
+            }
+        };
+
+        // Profile Popup Logic
+        document.getElementById("profile-toggle").onclick = function() {
+            document.getElementById("profile-popup").style.display = "block";
+        };
+
+        document.getElementById("close-profile").onclick = function() {
+            document.getElementById("profile-popup").style.display = "none";
+        };
+
+        // Video Popup Logic
+        document.getElementById("close-video").onclick = function() {
+            document.getElementById("video-popup").style.display = "none";
+        };
+
+        // Example of how to open video popup
+        function openVideo(url) {
+            const videoPopup = document.getElementById("video-popup");
+            const videoPlayer = document.getElementById("video-player");
+            videoPlayer.src = url;
+            videoPopup.style.display = "flex";
+        }
+
+        function startVideoCall() {
+            alert("Starting Video Call...");
+        }
+
+        function startAudioCall() {
+            alert("Starting Audio Call...");
+        }
+
+        function shareFile() {
+            alert("Share File Functionality");
+        }
+
+        function shareLocation() {
+            alert("Share Location Functionality");
+        }
+    </script>
+</body>
+    </html>
